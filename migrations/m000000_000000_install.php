@@ -9,7 +9,7 @@ use yii\easyii\modules\carousel\models\Carousel;
 use yii\easyii\modules\faq\models\Faq;
 use yii\easyii\modules\feedback\models\Feedback;
 use yii\easyii\modules\file\models\File;
-use yii\easyii\modules\gallery\models\Album;
+use yii\easyii\modules\gallery;
 use yii\easyii\modules\guestbook\models\Guestbook;
 use yii\easyii\modules\news\models\News;
 use yii\easyii\modules\page\models\Page;
@@ -19,7 +19,7 @@ use yii\easyii\modules\text\models\Text;
 
 class m000000_000000_install extends \yii\db\Migration
 {
-    const VERSION = 1.1;
+    const VERSION = 0.9;
 
     public function up()
     {
@@ -61,25 +61,25 @@ class m000000_000000_install extends \yii\db\Migration
         //PHOTOS
         $this->createTable(models\Photo::tableName(), [
             'photo_id' => 'pk',
-            'model' => Schema::TYPE_STRING . '(128) NOT NULL',
+            'class' => Schema::TYPE_STRING . '(128) NOT NULL',
             'item_id' => Schema::TYPE_INTEGER . " NOT NULL",
             'image' => Schema::TYPE_STRING . '(128) NOT NULL',
             'description' => Schema::TYPE_STRING . '(1024) NOT NULL',
             'order_num' => Schema::TYPE_INTEGER . " NOT NULL",
         ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
-        $this->createIndex('model_item', models\Photo::tableName(), ['model', 'item_id']);
+        $this->createIndex('model_item', models\Photo::tableName(), ['class', 'item_id']);
 
         //SEOTEXT
         $this->createTable(models\SeoText::tableName(), [
             'seotext_id' => 'pk',
-            'model' => Schema::TYPE_STRING . '(128) NOT NULL',
+            'class' => Schema::TYPE_STRING . '(128) NOT NULL',
             'item_id' => Schema::TYPE_INTEGER . " NOT NULL",
             'h1' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
             'title' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
             'keywords' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
             'description' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
         ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
-        $this->createIndex('model_item', models\SeoText::tableName(), ['model', 'item_id'], true);
+        $this->createIndex('model_item', models\SeoText::tableName(), ['class', 'item_id'], true);
 
         //SETTINGS
         $this->createTable(models\Setting::tableName(), [
@@ -99,7 +99,7 @@ class m000000_000000_install extends \yii\db\Migration
             'title' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
             'text' => Schema::TYPE_TEXT . ' DEFAULT NULL',
             'order_num' => Schema::TYPE_INTEGER . ' NOT NULL',
-            'status' => Schema::TYPE_BOOLEAN . " DEFAULT '0'"
+            'status' => Schema::TYPE_BOOLEAN . " DEFAULT '1'"
         ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
 
         //CATALOG MODULE
@@ -107,16 +107,13 @@ class m000000_000000_install extends \yii\db\Migration
             'category_id' => 'pk',
             'title' => Schema::TYPE_STRING . '(128) NOT NULL',
             'image' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
-            'available' => Schema::TYPE_INTEGER . " DEFAULT '1'",
-            'price' => Schema::TYPE_FLOAT . " DEFAULT '0'",
-            'discount' => Schema::TYPE_INTEGER . " DEFAULT '0'",
             'fields' => Schema::TYPE_TEXT . ' NOT NULL',
-            'order_num' => Schema::TYPE_INTEGER . ' NOT NULL',
             'slug' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
             'tree' => Schema::TYPE_INTEGER . ' NOT NULL',
             'lft' => Schema::TYPE_INTEGER . ' NOT NULL',
             'rgt' => Schema::TYPE_INTEGER . ' NOT NULL',
             'depth' => Schema::TYPE_INTEGER . ' NOT NULL',
+            'order_num' => Schema::TYPE_INTEGER . ' NOT NULL',
             'status' => Schema::TYPE_BOOLEAN . " DEFAULT '1'"
         ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
         $this->createIndex('slug', catalog\models\Category::tableName(), 'slug', true);
@@ -126,12 +123,25 @@ class m000000_000000_install extends \yii\db\Migration
             'category_id' => Schema::TYPE_INTEGER . ' NOT NULL',
             'title' => Schema::TYPE_STRING . '(128) NOT NULL',
             'description' => Schema::TYPE_TEXT . ' DEFAULT NULL',
+            'available' => Schema::TYPE_INTEGER . " DEFAULT '1'",
+            'price' => Schema::TYPE_FLOAT . " DEFAULT '0'",
+            'discount' => Schema::TYPE_INTEGER . " DEFAULT '0'",
             'data' => Schema::TYPE_TEXT . ' NOT NULL',
             'image' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
             'slug' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
-            'order_num' => Schema::TYPE_INTEGER . ' NOT NULL',
+            'time' => Schema::TYPE_INTEGER .  " DEFAULT '0'",
+            'status' => Schema::TYPE_BOOLEAN . " DEFAULT '1'"
         ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
         $this->createIndex('slug', catalog\models\Item::tableName(), 'slug', true);
+
+        $this->createTable(catalog\models\ItemData::tableName(), [
+            'data_id' => 'pk',
+            'item_id' => Schema::TYPE_INTEGER . ' NOT NULL',
+            'name' => Schema::TYPE_STRING . '(128) NOT NULL',
+            'value' => Schema::TYPE_STRING . '(1024) DEFAULT NULL',
+        ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
+        $this->createIndex('item_id_name', catalog\models\ItemData::tableName(), ['item_id', 'name']);
+        $this->createIndex('value', catalog\models\ItemData::tableName(), 'value');
 
         //SHOPCART MODULE
         $this->createTable(shopcart\models\Order::tableName(), [
@@ -141,9 +151,11 @@ class m000000_000000_install extends \yii\db\Migration
             'phone' => Schema::TYPE_STRING . '(64) NOT NULL',
             'email' => Schema::TYPE_STRING . '(128) NOT NULL',
             'comment' => Schema::TYPE_STRING . '(1024) NOT NULL',
+            'remark' => Schema::TYPE_STRING . '(1024) NOT NULL',
             'access_token' => Schema::TYPE_STRING . '(32) NOT NULL',
+            'ip' => Schema::TYPE_STRING . '(16) NOT NULL',
             'time' => Schema::TYPE_INTEGER .  " DEFAULT '0'",
-            'new' => Schema::TYPE_BOOLEAN . " DEFAULT '1'",
+            'new' => Schema::TYPE_BOOLEAN . " DEFAULT '0'",
             'status' => Schema::TYPE_BOOLEAN . " DEFAULT '0'"
         ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
 
@@ -165,7 +177,8 @@ class m000000_000000_install extends \yii\db\Migration
             'phone' => Schema::TYPE_STRING . '(64) DEFAULT NULL',
             'title' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
             'text' => Schema::TYPE_TEXT . ' NOT NULL',
-            'answer' => Schema::TYPE_TEXT . ' DEFAULT NULL',
+            'answer_subject' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
+            'answer_text' => Schema::TYPE_TEXT . ' DEFAULT NULL',
             'time' => Schema::TYPE_INTEGER .  " DEFAULT '0'",
             'ip' => Schema::TYPE_STRING . '(16) NOT NULL',
             'status' => Schema::TYPE_BOOLEAN . " DEFAULT '0'"
@@ -185,19 +198,19 @@ class m000000_000000_install extends \yii\db\Migration
         $this->createIndex('slug', File::tableName(), 'slug', true);
 
         //GALLERY MODULE
-        $this->createTable(Album::tableName(), [
-            'album_id' => 'pk',
+        $this->createTable(gallery\models\Category::tableName(), [
+            'category_id' => 'pk',
             'title' => Schema::TYPE_STRING . '(128) NOT NULL',
             'image' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
             'slug' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
-            'order_num' => Schema::TYPE_INTEGER . ' NOT NULL',
             'tree' => Schema::TYPE_INTEGER . ' NOT NULL',
             'lft' => Schema::TYPE_INTEGER . ' NOT NULL',
             'rgt' => Schema::TYPE_INTEGER . ' NOT NULL',
             'depth' => Schema::TYPE_INTEGER . ' NOT NULL',
+            'order_num' => Schema::TYPE_INTEGER . ' NOT NULL',
             'status' => Schema::TYPE_BOOLEAN . " DEFAULT '1'"
         ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
-        $this->createIndex('slug', Album::tableName(), 'slug', true);
+        $this->createIndex('slug', gallery\models\Category::tableName(), 'slug', true);
 
         //GUESTBOOK MODULE
         $this->createTable(Guestbook::tableName(), [
@@ -223,7 +236,7 @@ class m000000_000000_install extends \yii\db\Migration
             'slug' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
             'time' => Schema::TYPE_INTEGER .  " DEFAULT '0'",
             'views' => Schema::TYPE_INTEGER . " DEFAULT '0'",
-            'status' => Schema::TYPE_BOOLEAN . " DEFAULT '0'"
+            'status' => Schema::TYPE_BOOLEAN . " DEFAULT '1'"
         ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
         $this->createIndex('slug', News::tableName(), 'slug', true);
 
@@ -250,9 +263,9 @@ class m000000_000000_install extends \yii\db\Migration
             'short' => Schema::TYPE_STRING . '(1024) DEFAULT NULL',
             'text' => Schema::TYPE_TEXT . ' NOT NULL',
             'slug' => Schema::TYPE_STRING . '(128) DEFAULT NULL',
+            'time' => Schema::TYPE_INTEGER .  " DEFAULT '0'",
             'views' => Schema::TYPE_INTEGER . " DEFAULT '0'",
-            'order_num' => Schema::TYPE_INTEGER . ' NOT NULL',
-            'status' => Schema::TYPE_BOOLEAN . " DEFAULT '0'"
+            'status' => Schema::TYPE_BOOLEAN . " DEFAULT '1'"
         ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
         $this->createIndex('slug', article\models\Item::tableName(), 'slug', true);
 
@@ -271,7 +284,7 @@ class m000000_000000_install extends \yii\db\Migration
             'question' => Schema::TYPE_TEXT . ' NOT NULL',
             'answer' => Schema::TYPE_TEXT . ' NOT NULL',
             'order_num' => Schema::TYPE_INTEGER . ' NOT NULL',
-            'status' => Schema::TYPE_BOOLEAN . " DEFAULT '0'"
+            'status' => Schema::TYPE_BOOLEAN . " DEFAULT '1'"
         ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
 
         //SUBSCRIBE MODULE
@@ -299,6 +312,22 @@ class m000000_000000_install extends \yii\db\Migration
         ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
         $this->createIndex('slug', Text::tableName(), 'slug', true);
 
+        //Tags
+        $this->createTable(models\Tag::tableName(), [
+            'tag_id' => 'pk',
+            'name' => Schema::TYPE_STRING . '(128) NOT NULL',
+            'frequency' => Schema::TYPE_INTEGER . " DEFAULT '0'"
+        ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
+        $this->createIndex('name', models\Tag::tableName(), 'name', true);
+
+        $this->createTable(models\TagAssign::tableName(), [
+            'class' => Schema::TYPE_STRING . '(128) NOT NULL',
+            'item_id' => Schema::TYPE_INTEGER . " NOT NULL",
+            'tag_id' => Schema::TYPE_INTEGER . " NOT NULL",
+        ], 'ENGINE=MyISAM DEFAULT CHARSET=utf8');
+        $this->createIndex('class', models\TagAssign::tableName(), 'class');
+        $this->createIndex('item_tag', models\TagAssign::tableName(), ['item_id', 'tag_id']);
+
         //INSERT VERSION
         $this->delete(models\Setting::tableName(), ['name' => 'easyii_version']);
         $this->insert(models\Setting::tableName(), [
@@ -318,11 +347,13 @@ class m000000_000000_install extends \yii\db\Migration
         $this->dropTable(models\Setting::tableName());
 
         $this->dropTable(Carousel::tableName());
-        $this->dropTable(Category::tableName());
-        $this->dropTable(Item::tableName());
+        $this->dropTable(catalog\models\Category::tableName());
+        $this->dropTable(catalog\models\Item::tableName());
+        $this->dropTable(article\models\Category::tableName());
+        $this->dropTable(article\models\Item::tableName());
         $this->dropTable(Feedback::tableName());
         $this->dropTable(File::tableName());
-        $this->dropTable(Album::tableName());
+        $this->dropTable(gallery\models\Category::tableName());
         $this->dropTable(Guestbook::tableName());
         $this->dropTable(News::tableName());
         $this->dropTable(Page::tableName());

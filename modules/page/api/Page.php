@@ -5,6 +5,13 @@ use Yii;
 use yii\easyii\modules\page\models\Page as PageModel;
 use yii\helpers\Html;
 
+/**
+ * Page module API
+ * @package yii\easyii\modules\page\api
+ *
+ * @method static PageObject get(mixed $id_slug) Get page object by id or slug
+ */
+
 class Page extends \yii\easyii\components\API
 {
     private $_pages = [];
@@ -26,15 +33,9 @@ class Page extends \yii\easyii\components\API
 
     private function notFound($id_slug)
     {
-        $page = new PageModel();
-
-        if(!Yii::$app->user->isGuest && preg_match(PageModel::$SLUG_PATTERN, $id_slug)){
-            $a = Html::a(Yii::t('easyii/page/api', 'Create page'), ['/admin/page/a/create', 'slug' => $id_slug], ['target' => '_blank']);
-            $page->title = $a;
-            $page->text = $a;
-
-        }
-
+        $page = new PageModel([
+            'slug' => $id_slug
+        ]);
         return new PageObject($page);
     }
 }

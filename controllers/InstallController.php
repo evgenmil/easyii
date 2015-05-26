@@ -2,6 +2,7 @@
 namespace yii\easyii\controllers;
 
 use Yii;
+use yii\easyii\helpers\Data;
 use yii\web\ServerErrorHttpException;
 
 use yii\easyii\helpers\WebConsole;
@@ -45,7 +46,7 @@ class InstallController extends \yii\web\Controller
             $this->installModules();
 
             Yii::$app->cache->flush();
-            Yii::$app->session->setFlash('root_password', $installForm->root_password);
+            Yii::$app->session->setFlash(InstallForm::ROOT_PASSWORD_KEY, $installForm->root_password);
 
             return $this->redirect(['/admin/install/finish']);
         }
@@ -60,7 +61,9 @@ class InstallController extends \yii\web\Controller
 
     public function actionFinish()
     {
-        $root_password = Yii::$app->session->getFlash('root_password', null, true);
+        $root_password = Yii::$app->session->getFlash(InstallForm::ROOT_PASSWORD_KEY, null, true);
+        $returnRoute = Yii::$app->session->getFlash(InstallForm::RETURN_URL_KEY, null, '/admin');
+
         if($root_password)
         {
             $loginForm = new LoginForm([
@@ -68,7 +71,7 @@ class InstallController extends \yii\web\Controller
                 'password' => $root_password,
             ]);
             if($loginForm->login()){
-                return $this->redirect(['/admin/']);
+                return $this->redirect([$returnRoute]);
             }
         }
 
@@ -185,7 +188,7 @@ class InstallController extends \yii\web\Controller
 
     private function installModules()
     {
-        $language = substr(Yii::$app->language, 0, 2);
+        $language = Data::getLocale();
 
         foreach(glob(Yii::getAlias('@easyii'). DIRECTORY_SEPARATOR .'modules/*') as $module)
         {

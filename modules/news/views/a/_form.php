@@ -1,24 +1,24 @@
 <?php
-use dosamigos\datepicker\DatePicker;
+use yii\easyii\widgets\DateTimePicker;
 use yii\easyii\helpers\Image;
+use yii\easyii\widgets\TagsInput;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\widgets\ActiveForm;
 use yii\easyii\widgets\Redactor;
 use yii\easyii\widgets\SeoForm;
 
-$model->time = date('Y-m-d', $model->time);
 $module = $this->context->module->id;
 ?>
 <?php $form = ActiveForm::begin([
     'enableAjaxValidation' => true,
-    'options' => ['enctype' => 'multipart/form-data']
+    'options' => ['enctype' => 'multipart/form-data', 'class' => 'model-form']
 ]); ?>
 <?= $form->field($model, 'title') ?>
 <?php if($this->context->module->settings['enableThumb']) : ?>
     <?php if($model->image) : ?>
-        <img src="<?= Image::thumb(Yii::getAlias('@webroot') . $model->image, 240) ?>">
-        <a href="'<?= Url::to(['/admin/'.$module.'/a/clear-image', 'id' => $model->news_id]) ?>" class="text-danger confirm-delete" title="<?= Yii::t('easyii', 'Clear image')?>"><?= Yii::t('easyii', 'Clear image')?></a>
+        <img src="<?= Image::thumb($model->image, 240) ?>">
+        <a href="<?= Url::to(['/admin/'.$module.'/a/clear-image', 'id' => $model->news_id]) ?>" class="text-danger confirm-delete" title="<?= Yii::t('easyii', 'Clear image')?>"><?= Yii::t('easyii', 'Clear image')?></a>
     <?php endif; ?>
     <?= $form->field($model, 'image')->fileInput() ?>
 <?php endif; ?>
@@ -34,14 +34,11 @@ $module = $this->context->module->id;
     ]
 ]) ?>
 
-<?= $form->field($model, 'time')->widget(
-    DatePicker::className(), [
-        'language' => strtolower(substr(Yii::$app->language, 0, 2)),
-        'clientOptions' => [
-            'autoclose' => true,
-            'format' => 'yyyy-mm-dd'
-        ]
-    ]); ?>
+<?= $form->field($model, 'time')->widget(DateTimePicker::className()); ?>
+
+<?php if($this->context->module->settings['enableTags']) : ?>
+    <?= $form->field($model, 'tagNames')->widget(TagsInput::className()) ?>
+<?php endif; ?>
 
 <?php if(IS_ROOT) : ?>
     <?= $form->field($model, 'slug') ?>

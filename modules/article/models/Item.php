@@ -4,7 +4,8 @@ namespace yii\easyii\modules\article\models;
 use Yii;
 use yii\behaviors\SluggableBehavior;
 use yii\easyii\behaviors\SeoBehavior;
-use yii\easyii\behaviors\SortableModel;
+use yii\easyii\behaviors\Taggable;
+use yii\easyii\models\Photo;
 use yii\helpers\StringHelper;
 
 class Item extends \yii\easyii\components\ActiveRecord
@@ -24,9 +25,12 @@ class Item extends \yii\easyii\components\ActiveRecord
             [['title', 'short', 'text'], 'trim'],
             ['title', 'string', 'max' => 128],
             ['image', 'image'],
-            ['views', 'number', 'integerOnly' => true],
+            [['category_id', 'views', 'time', 'status'], 'integer'],
+            ['time', 'default', 'value' => time()],
             ['slug', 'match', 'pattern' => self::$SLUG_PATTERN, 'message' => Yii::t('easyii', 'Slug can contain only 0-9, a-z and "-" characters (max: 128).')],
             ['slug', 'default', 'value' => null],
+            ['status', 'default', 'value' => self::STATUS_ON],
+            ['tagNames', 'safe']
         ];
     }
 
@@ -37,16 +41,17 @@ class Item extends \yii\easyii\components\ActiveRecord
             'text' => Yii::t('easyii', 'Text'),
             'short' => Yii::t('easyii/article', 'Short'),
             'image' => Yii::t('easyii', 'Image'),
+            'time' => Yii::t('easyii', 'Date'),
             'slug' => Yii::t('easyii', 'Slug'),
+            'tagNames' => Yii::t('easyii', 'Tags'),
         ];
     }
 
     public function behaviors()
     {
         return [
-            SortableModel::className(),
             'seoBehavior' => SeoBehavior::className(),
-            'seo' => SeoBehavior::className(),
+            'taggabble' => Taggable::className(),
             'sluggable' => [
                 'class' => SluggableBehavior::className(),
                 'attribute' => 'title',
@@ -60,15 +65,18 @@ class Item extends \yii\easyii\components\ActiveRecord
         return $this->hasOne(Category::className(), ['category_id' => 'category_id']);
     }
 
+    public function getPhotos()
+    {
+        return $this->hasMany(Photo::className(), ['item_id' => 'item_id'])->where(['class' => self::className()])->sort();
+    }
+
     public function beforeSave($insert)
     {
         if (parent::beforeSave($insert)) {
             $settings = Yii::$app->getModule('admin')->activeModules['article']->settings;
-            if($this->short && $settings['enableShort']){
-                $this->short = StringHelper::truncate($this->short, $settings['shortMaxLength']);
-            }
+            $this->short = StringHelper::truncate($settings['enableShort'] ? $this->short : strip_tags($this->text), $settings['shortMaxLength']);
 
-            if(!$this->isNewRecord && $this->image != $this->oldAttributes['image']){
+            if(!$insert && $this->image != $this->oldAttributes['image'] && $this->oldAttributes['image']){
                 @unlink(Yii::getAlias('@webroot').$this->oldAttributes['image']);
             }
 
@@ -84,6 +92,10 @@ class Item extends \yii\easyii\components\ActiveRecord
 
         if($this->image){
             @unlink(Yii::getAlias('@webroot').$this->image);
+        }
+
+        foreach($this->getPhotos()->all() as $photo){
+            $photo->delete();
         }
     }
 }

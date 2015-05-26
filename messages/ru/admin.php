@@ -26,6 +26,7 @@ return [
     'Text' => 'Текст',
     'Date' => 'Дата',
     'Slug' => 'Метка',
+    'Tags' => 'Список тэгов',
     'Status' => 'Состояние',
     'Image' => 'Изображение',
     'File' => 'Файл',
@@ -61,6 +62,7 @@ return [
     'Not found' => 'Не найдено',
     'Create error. {0}' => 'Ошибка при создании. {0}',
     'Update error. {0}' => 'Ошибка при обновлении. {0}',
+    'An error has occurred' => 'Произошла ошибка',
     'Slug can contain only 0-9, a-z and "-" characters (max: 128).' => 'Метка может содержать только 0-9, a-z и "-" (макс. 128).',
 
     'Only for developer' => 'Только для разработчика',

@@ -19,7 +19,7 @@ if($action === 'view')
     } elseif(strpos($returnUrl, 'all') !== false) {
         $backTo = 'all';
         $allUrl = $returnUrl;
-    } else{
+    } else {
         $backTo = 'index';
         $indexUrl = $returnUrl;
     }
@@ -60,6 +60,6 @@ if($action === 'view')
         <li class="pull-right">
             <a href="<?= Url::to(['/admin/'.$module.'/a/set-answer', 'id' => Yii::$app->request->get('id')]) ?>" class="text-warning"><span class="glyphicon glyphicon-ok"></span> <?= Yii::t('easyii/feedback', 'Mark as answered') ?></a>
         </li>
-    <?php endif; ?>    
+    <?php endif; ?>
 </ul>
 <br/>

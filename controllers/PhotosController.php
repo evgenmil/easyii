@@ -29,12 +29,12 @@ class PhotosController extends Controller
         ];
     }
 
-    public function actionUpload($model, $item_id)
+    public function actionUpload($class, $item_id)
     {
         $success = null;
 
         $photo = new Photo;
-        $photo->model = $model;
+        $photo->class = $class;
         $photo->item_id = $item_id;
         $photo->image = UploadedFile::getInstance($photo, 'image');
 
@@ -48,7 +48,7 @@ class PhotosController extends Controller
                         'photo' => [
                             'id' => $photo->primaryKey,
                             'image' => $photo->image,
-                            'thumb' => Image::thumb(Yii::getAlias('@webroot') . $photo->image, Photo::PHOTO_THUMB_WIDTH, Photo::PHOTO_THUMB_HEIGHT),
+                            'thumb' => Image::thumb($photo->image, Photo::PHOTO_THUMB_WIDTH, Photo::PHOTO_THUMB_HEIGHT),
                             'description' => ''
                         ]
                     ];
@@ -111,7 +111,7 @@ class PhotosController extends Controller
                             'message' => Yii::t('easyii', 'Photo uploaded'),
                             'photo' => [
                                 'image' => $photo->image,
-                                'thumb' => Image::thumb(Yii::getAlias('@webroot') . $photo->image, Photo::PHOTO_THUMB_WIDTH, Photo::PHOTO_THUMB_HEIGHT)
+                                'thumb' => Image::thumb($photo->image, Photo::PHOTO_THUMB_WIDTH, Photo::PHOTO_THUMB_HEIGHT)
                             ]
                         ];
                     }
@@ -141,19 +141,19 @@ class PhotosController extends Controller
     {
         if(($model = Photo::findOne($id))){
             $model->delete();
-        } else{
+        } else {
             $this->error = Yii::t('easyii', 'Not found');
         }
         return $this->formatResponse(Yii::t('easyii', 'Photo deleted'));
     }
 
-    public function actionUp($id, $model, $item_id)
+    public function actionUp($id, $class, $item_id)
     {
-        return $this->move($id, 'up', ['model' => $model, 'item_id' => $item_id]);
+        return $this->move($id, 'up', ['class' => $class, 'item_id' => $item_id]);
     }
 
-    public function actionDown($id, $model, $item_id)
+    public function actionDown($id, $class, $item_id)
     {
-        return $this->move($id, 'down', ['model' => $model, 'item_id' => $item_id]);
+        return $this->move($id, 'down', ['class' => $class, 'item_id' => $item_id]);
     }
 }

@@ -25,26 +25,9 @@ class Image
         return Upload::getLink($fileName);
     }
 
-    static function createThumbnail($fileName, $width, $height = null, $crop = true)
-    {
-        $fileName = str_replace(Url::base(true), '', $fileName);
-        
-        $webRoot = Yii::getAlias('@webroot');
-        if(!strstr($fileName, $webRoot)){
-            $fileName = $webRoot . $fileName;
-        }
-        $thumbFolder = dirname($fileName) . DIRECTORY_SEPARATOR . ($width.($height ? 'x'.$height : ''));
-        $thumbFile = $thumbFolder . DIRECTORY_SEPARATOR . basename($fileName);
-
-        if(!FileHelper::createDirectory($thumbFolder)){
-            throw new HttpException(500, 'Cannot create "'.$thumbFolder.'". Please check write permissions.');
-        }
-        return self::copyResizedImage($fileName, $thumbFile, $width, $height, $crop) ? Upload::getLink($thumbFile) : false;
-    }
-
     static function thumb($filename, $width = null, $height = null, $crop = true)
     {
-        if(file_exists($filename))
+        if($filename && file_exists(($filename = Yii::getAlias('@webroot') . $filename)))
         {
             $info = pathinfo($filename);
             $thumbName = $info['filename'] . '-' . md5( filemtime($filename) . (int)$width . (int)$height . (int)$crop ) . '.' . $info['extension'];
@@ -97,6 +80,5 @@ class Image
         else {
             throw new HttpException(500, 'Please install GD or Imagick extension');
         }
-        return false;
     }
 }

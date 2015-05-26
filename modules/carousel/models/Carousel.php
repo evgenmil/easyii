@@ -21,6 +21,8 @@ class Carousel extends \yii\easyii\components\ActiveRecord
         return [
             ['image', 'image'],
             [['title', 'text', 'link'], 'trim'],
+            ['status', 'integer'],
+            ['status', 'default', 'value' => self::STATUS_ON],
         ];
     }
 
@@ -45,7 +47,7 @@ class Carousel extends \yii\easyii\components\ActiveRecord
     public function beforeSave($insert)
     {
         if (parent::beforeSave($insert)) {
-            if(!$this->isNewRecord && $this->image != $this->oldAttributes['image']){
+            if(!$insert && $this->image != $this->oldAttributes['image'] && $this->oldAttributes['image']){
                 @unlink(Yii::getAlias('@webroot').$this->oldAttributes['image']);
             }
             return true;

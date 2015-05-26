@@ -9,11 +9,11 @@ use yii\easyii\assets\PhotosAsset;
 PhotosAsset::register($this);
 Fancybox::widget(['selector' => '.plugin-box']);
 
-$model = get_class($this->context->model);
+$class = get_class($this->context->model);
 $item_id = $this->context->model->primaryKey;
 
 $linkParams = [
-    'model' => $model,
+    'class' => $class,
     'item_id' => $item_id,
 ];
 
@@ -56,7 +56,7 @@ $photoTemplate = str_replace('>\\', '>', $photoTemplate);
     <?php foreach($photos as $photo) : ?>
         <?= str_replace(
             ['{{photo_id}}', '{{photo_thumb}}', '{{photo_image}}', '{{photo_description}}'],
-            [$photo->primaryKey, Image::thumb(Yii::getAlias('@webroot') . $photo->image, Photo::PHOTO_THUMB_WIDTH, Photo::PHOTO_THUMB_HEIGHT), $photo->image, $photo->description],
+            [$photo->primaryKey, Image::thumb($photo->image, Photo::PHOTO_THUMB_WIDTH, Photo::PHOTO_THUMB_HEIGHT), $photo->image, $photo->description],
             $photoTemplate)
         ?>
     <?php endforeach; ?>

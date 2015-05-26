@@ -1,5 +1,6 @@
 <?php
 use yii\easyii\helpers\Image;
+use yii\easyii\widgets\DateTimePicker;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\widgets\ActiveForm;
@@ -11,12 +12,12 @@ $module = $this->context->module->id;
 ?>
 
 <?php $form = ActiveForm::begin([
-    'options' => ['enctype' => 'multipart/form-data']
+    'options' => ['enctype' => 'multipart/form-data', 'class' => 'model-form']
 ]); ?>
 <?= $form->field($model, 'title') ?>
 <?php if($settings['itemThumb']) : ?>
     <?php if($model->image) : ?>
-        <img src="<?= Image::thumb(Yii::getAlias('@webroot') . $model->image, 240) ?>">
+        <img src="<?= Image::thumb($model->image, 240) ?>">
         <a href="<?= Url::to(['/admin/'.$module.'/items/clear-image', 'id' => $model->primaryKey]) ?>" class="text-danger confirm-delete" title="<?= Yii::t('easyii', 'Clear image')?>"><?= Yii::t('easyii', 'Clear image')?></a>
     <?php endif; ?>
     <?= $form->field($model, 'image')->fileInput() ?>
@@ -32,6 +33,12 @@ $module = $this->context->module->id;
         ]
     ]) ?>
 <?php endif; ?>
+
+<?= $form->field($model, 'available') ?>
+<?= $form->field($model, 'price') ?>
+<?= $form->field($model, 'discount') ?>
+
+<?= $form->field($model, 'time')->widget(DateTimePicker::className()); ?>
 
 <?php if(IS_ROOT) : ?>
     <?= $form->field($model, 'slug') ?>

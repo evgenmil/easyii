@@ -46,8 +46,6 @@ class AController extends Controller
                 return ActiveForm::validate($model);
             }
             else{
-                $model->status = Faq::STATUS_ON;
-
                 if($model->save()){
                     $this->flash('success', Yii::t('easyii/faq', 'Entry created'));
                     return $this->redirect(['/admin/'.$this->module->id]);
@@ -102,7 +100,7 @@ class AController extends Controller
     {
         if(($model = Faq::findOne($id))){
             $model->delete();
-        } else{
+        } else {
             $this->error = Yii::t('easyii', 'Not found');
         }
         return $this->formatResponse(Yii::t('easyii/faq', 'Entry deleted'));
