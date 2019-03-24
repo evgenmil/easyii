@@ -22,13 +22,17 @@ $settings = $this->context->module->settings;
             <option value="" class="smooth"><?= Yii::t('easyii', 'No') ?></option>
             <?php foreach($class::find()->sort()->asArray()->all() as $node) : ?>
                 <option
-                    value="<?= $node['category_id'] ?>"
-                    <?php if($parent == $node['category_id']) echo 'SELECTED' ?>
+                    value="<?= $node['id'] ?>"
+                    <?php if($parent == $node['id']) echo 'SELECTED' ?>
                     style="padding-left: <?= $node['depth'] * 20 ?>px;"
                 ><?= $node['title'] ?></option>
             <?php endforeach; ?>
         </select>
     </div>
+<?php endif; ?>
+
+<?php if(!empty($settings['categoryDescription'])) : ?>
+    <?= $form->field($model, 'description')->textarea(['rows' => 3]) ?>
 <?php endif; ?>
 
 <?php if(!empty($settings['categoryThumb'])) : ?>

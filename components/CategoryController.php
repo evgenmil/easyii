@@ -4,7 +4,8 @@ namespace yii\easyii\components;
 use Yii;
 use yii\easyii\actions\ChangeStatusAction;
 use yii\easyii\actions\ClearImageAction;
-use yii\easyii\behaviors\SortableModel;
+use yii\easyii\actions\FieldsAction;
+use yii\easyii\helpers\Upload;
 use yii\widgets\ActiveForm;
 
 /**
@@ -19,10 +20,16 @@ class CategoryController extends Controller
     /** @var string */
     public $viewRoute = '/items';
 
+    public $rootActions = ['fields'];
+
     public function actions()
     {
         $className = $this->categoryClass;
         return [
+            'fields' => [
+                'class' => FieldsAction::className(),
+                'model' => $className
+            ],
             'clear-image' => [
                 'class' => ClearImageAction::className(),
                 'model' => $className
@@ -60,6 +67,7 @@ class CategoryController extends Controller
      */
     public function actionCreate($parent = null)
     {
+        /** @var CategoryModel $model */
         $class = $this->categoryClass;
         $model = new $class;
 
@@ -70,16 +78,7 @@ class CategoryController extends Controller
             } else {
                 $model->status = $class::STATUS_ON;
 
-                $parent = (int)Yii::$app->request->post('parent', null);
-                if ($parent > 0 && ($parentCategory = $class::findOne($parent))) {
-                    $model->order_num = $parentCategory->order_num;
-                    $model->appendTo($parentCategory);
-                } else {
-                    $model->attachBehavior('sortable', SortableModel::className());
-                    $model->makeRoot();
-                }
-
-                if (!$model->hasErrors()) {
+                if ($model->create(Yii::$app->request->post('parent', null))) {
                     $this->flash('success', Yii::t('easyii', 'Category created'));
                     return $this->redirect(['/admin/' . $this->moduleName, 'id' => $model->primaryKey]);
                 } else {
@@ -143,6 +142,22 @@ class CategoryController extends Controller
         return $this->formatResponse(Yii::t('easyii', 'Category deleted'));
     }
 
+    public function actionDeleteDataFile($file)
+    {
+        $itemClass = $this->modelClass;
+        foreach($itemClass::find()->where(['like', 'data', $file])->all() as $model) {
+
+            foreach ($model->data as $name => $value) {
+                if (!is_array($value) && strpos($value, '/' . $file) !== false) {
+                    Upload::delete($value);
+                    $model->data->{$name} = '';
+                }
+            }
+            $model->update();
+        }
+        return $this->formatResponse(Yii::t('easyii', 'Deleted'));
+    }
+
     /**
      * Move category one level up up
      *
@@ -179,11 +194,11 @@ class CategoryController extends Controller
         $modelClass = $this->categoryClass;
 
         $up = $direction == 'up';
-        $orderDir = $up ? SORT_ASC : SORT_DESC;
+        $orderDir = $up ? SORT_DESC : SORT_ASC;
 
         if ($model->depth == 0) {
 
-            $swapCat = $modelClass::find()->where([$up ? '>' : '<', 'order_num', $model->order_num])->orderBy(['order_num' => $orderDir])->one();
+            $swapCat = $modelClass::find()->where([$up ? '<' : '>', 'order_num', $model->order_num])->orderBy(['order_num' => $orderDir])->one();
             if ($swapCat) {
                 $modelClass::updateAll(['order_num' => '-1'], ['order_num' => $swapCat->order_num]);
                 $modelClass::updateAll(['order_num' => $swapCat->order_num], ['order_num' => $model->order_num]);
@@ -229,7 +244,7 @@ class CategoryController extends Controller
         foreach ($model->children()->all() as $child) {
             $ids[] = $child->primaryKey;
         }
-        $modelClass::updateAll(['status' => $status], ['in', 'category_id', $ids]);
+        $modelClass::updateAll(['status' => $status], ['in', 'id', $ids]);
         $model->trigger(\yii\db\ActiveRecord::EVENT_AFTER_UPDATE);
 
         return $this->formatResponse(Yii::t('easyii', 'Status successfully changed'));

@@ -5,6 +5,7 @@ use Yii;
 use yii\behaviors\SluggableBehavior;
 use yii\easyii\behaviors\ImageFile;
 use yii\easyii\behaviors\SeoBehavior;
+use yii\easyii\behaviors\SlugBehavior;
 use yii\easyii\behaviors\Taggable;
 use yii\easyii\models\Photo;
 use yii\easyii\modules\article\ArticleModule;
@@ -56,11 +57,9 @@ class Item extends \yii\easyii\components\ActiveRecord
             'seoBehavior' => SeoBehavior::className(),
             'taggabble' => Taggable::className(),
             'sluggable' => [
-                'class' => SluggableBehavior::className(),
-                'attribute' => 'title',
-                'ensureUnique' => true,
+                'class' => SlugBehavior::className(),
                 'immutable' => ArticleModule::setting('itemSlugImmutable')
-            ]
+            ],
         ];
         if(ArticleModule::setting('articleThumb')){
             $behaviors['imageFileBehavior'] = ImageFile::className();
@@ -71,12 +70,12 @@ class Item extends \yii\easyii\components\ActiveRecord
 
     public function getCategory()
     {
-        return $this->hasOne(Category::className(), ['category_id' => 'category_id']);
+        return Category::get($this->category_id);
     }
 
     public function getPhotos()
     {
-        return $this->hasMany(Photo::className(), ['item_id' => 'item_id'])->where(['class' => self::className()])->sort();
+        return $this->hasMany(Photo::className(), ['item_id' => 'id'])->where(['class' => self::className()])->sort();
     }
 
     public function beforeSave($insert)

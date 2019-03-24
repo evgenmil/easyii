@@ -6,6 +6,7 @@ use yii\data\ActiveDataProvider;
 use yii\easyii\models\Tag;
 use yii\easyii\modules\news\NewsModule;
 use yii\easyii\widgets\Fancybox;
+use yii\web\NotFoundHttpException;
 use yii\widgets\LinkPager;
 
 use yii\easyii\modules\news\models\News as NewsModel;
@@ -44,7 +45,7 @@ class News extends \yii\easyii\components\API
             $query
                 ->innerJoinWith('tags', false)
                 ->andWhere([Tag::tableName() . '.name' => (new NewsModel)->filterTagValues($options['tags'])])
-                ->addGroupBy('news_id');
+                ->addGroupBy('id');
         }
         if(!empty($options['orderBy'])){
             $query->orderBy($options['orderBy']);
@@ -105,12 +106,15 @@ class News extends \yii\easyii\components\API
 
     private function findNews($id_slug)
     {
-        $news = NewsModel::find()->where(['or', 'news_id=:id_slug', 'slug=:id_slug'], [':id_slug' => $id_slug])->status(NewsModel::STATUS_ON)->one();
-        if($news) {
-            $news->updateCounters(['views' => 1]);
-            return new NewsObject($news);
+        if(is_numeric($id_slug)) {
+            $condition = ['or', 'id=:id_slug', 'slug=:id_slug'];
         } else {
-            return null;
+            $condition = 'slug=:id_slug';
         }
+        if(!($news = NewsModel::find()->where($condition, [':id_slug' => $id_slug])->status(NewsModel::STATUS_ON)->one())) {
+            throw new NotFoundHttpException(Yii::t('easyii', 'Not found'));
+        }
+        $news->updateCounters(['views' => 1]);
+        return new NewsObject($news);
     }
 }

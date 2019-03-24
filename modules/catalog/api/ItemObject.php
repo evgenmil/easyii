@@ -18,12 +18,12 @@ class ItemObject extends \yii\easyii\components\ApiObject
 
     private $_photos;
 
-    public function getTitle(){
-        return LIVE_EDIT ? API::liveEdit($this->model->title, $this->editLink) : $this->model->title;
+    public function getTitle($liveEditable = true){
+        return ($liveEditable && LIVE_EDIT_ENABLED) ? API::liveEdit($this->model->title, $this->getEditLink()) : $this->model->title;
     }
 
     public function getDescription(){
-        return LIVE_EDIT ? API::liveEdit($this->model->description, $this->editLink, 'div') : $this->model->description;
+        return LIVE_EDIT_ENABLED ? API::liveEdit($this->model->description, $this->getEditLink(), 'div') : $this->model->description;
     }
 
     public function getCat(){
@@ -56,5 +56,21 @@ class ItemObject extends \yii\easyii\components\ApiObject
 
     public function getEditLink(){
         return Url::to(['/admin/catalog/items/edit/', 'id' => $this->id]);
+    }
+
+    public function __get($name)
+    {
+        if(is_object($this->data) && property_exists($this->data, $name)){
+            return $this->data->{$name};
+        }
+        return parent::__get($name);
+    }
+
+    public function __isset($name)
+    {
+        if(is_object($this->data) && property_exists($this->data, $name)){
+            return true;
+        }
+        return parent::__isset($name);
     }
 }

@@ -12,6 +12,7 @@ use yii\widgets\LinkPager;
 class CategoryObject extends \yii\easyii\components\ApiObject
 {
     public $slug;
+    public $description;
     public $image;
     public $tree;
     public $fields;
@@ -19,20 +20,32 @@ class CategoryObject extends \yii\easyii\components\ApiObject
     public $cache;
 
     private $_adp;
+    private $_children ;
 
-    public function getTitle(){
-        return LIVE_EDIT ? API::liveEdit($this->model->title, $this->editLink) : $this->model->title;
+    public function getTitle($liveEditable = true){
+        return ($liveEditable && LIVE_EDIT_ENABLED) ? API::liveEdit($this->model->title, $this->getEditLink()) : $this->model->title;
     }
 
-    public function pages($options = []){
+    public function getPages($options = []){
         return $this->_adp ? LinkPager::widget(array_merge($options, ['pagination' => $this->_adp->pagination])) : '';
     }
 
-    public function pagination(){
+    public function getPagination(){
         return $this->_adp ? $this->_adp->pagination : null;
     }
 
-    public function items($options = [])
+    public function getChildren()
+    {
+        if($this->_children === null) {
+            $this->_children = [];
+            foreach ($this->model->children as $child) {
+                $this->_children[] = Entity::cat($child);
+            }
+        }
+        return $this->_children;
+    }
+
+    public function getItems($options = [])
     {
         $result = [];
 
