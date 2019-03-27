@@ -6,7 +6,7 @@ $(function(){
     $('#easyii-navbar input').switcher({copy: {en: {yes: '', no: ''}}}).on('change', function(){
         var checkbox = $(this);
         checkbox.switcher('setDisabled', true);
-        location.href = checkbox.attr('data-link') + '/' + (checkbox.is(':checked') ? 1 : 0);
+        location.href = checkbox.attr('data-link') + '?id=' + (checkbox.is(':checked') ? 1 : 0);
     });
     $('#easyii-navbar .live-edit-label').on('click', function(){
         $('#easyii-navbar .switcher').trigger('click');
