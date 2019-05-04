@@ -177,6 +177,13 @@ class InstallController extends \yii\web\Controller
         ])->execute();
 
         $db->createCommand()->insert(Setting::tableName(), [
+            'name' => 'toolbar_visible',
+            'value' => '1',
+            'title' => Yii::t('easyii/install', 'Toolbar visible ("0" or "1")',
+            'visibility' => Setting::VISIBLE_ROOT
+        ])->execute();
+
+        $db->createCommand()->insert(Setting::tableName(), [
             'name' => 'toolbar_position',
             'value' => 'top',
             'title' => Yii::t('easyii/install', 'Frontend toolbar position').' ("top" or "bottom")',
